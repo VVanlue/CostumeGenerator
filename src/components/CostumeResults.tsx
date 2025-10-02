@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 interface CostumeItem {
   itemId: string;
-  category: string;
+  category: "top" | "bottom" | "footwear" | "accessory" | string;
   name: string;
   brand: string;
   price: number;
@@ -66,6 +66,54 @@ export const CostumeResults = ({
     }
   };
 
+  // Organize items by category for spatial layout
+  const topItems = items.filter(item => item.category === 'top');
+  const bottomItems = items.filter(item => item.category === 'bottom');
+  const footwearItems = items.filter(item => item.category === 'footwear');
+  const accessoryItems = items.filter(item => item.category === 'accessory');
+
+  const ItemCard = ({ item }: { item: CostumeItem }) => (
+    <a
+      href={item.productLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block bg-card border-2 border-border hover:border-primary/50 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-glow"
+    >
+      <div className="aspect-square relative overflow-hidden bg-muted">
+        <img 
+          src={item.imageUrl} 
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        {!item.vendorTrusted && (
+          <div className="absolute top-2 right-2 bg-destructive/90 text-destructive-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            Unverified
+          </div>
+        )}
+      </div>
+      
+      <div className="p-3 space-y-2">
+        <div>
+          <h3 className="font-semibold text-foreground text-sm line-clamp-1">{item.name}</h3>
+          <p className="text-xs text-muted-foreground">{item.brand}</p>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-primary">${item.price.toFixed(2)}</span>
+          <ExternalLink className="w-4 h-4 text-primary" />
+        </div>
+        
+        {!item.vendorTrusted && (
+          <p className="text-xs text-destructive flex items-start gap-1">
+            <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+            Unverified site
+          </p>
+        )}
+      </div>
+    </a>
+  );
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6 bg-card rounded-xl border-2 border-primary/20">
@@ -103,55 +151,51 @@ export const CostumeResults = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item) => (
-          <Card 
-            key={item.itemId}
-            className="group relative overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-glow"
-          >
-            <div className="aspect-square relative overflow-hidden bg-muted">
-              <img 
-                src={item.imageUrl} 
-                alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              {!item.vendorTrusted && (
-                <div className="absolute top-2 right-2 bg-destructive/90 text-destructive-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
-                  Unverified
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 space-y-3">
-              <div>
-                <h3 className="font-semibold text-foreground line-clamp-2 mb-1">{item.name}</h3>
-                <p className="text-sm text-muted-foreground">{item.brand}</p>
-                <p className="text-xs text-muted-foreground capitalize">{item.category}</p>
+      {/* Spatial Layout: How items would be worn */}
+      <div className="max-w-4xl mx-auto">
+        {/* Accessories (top row) - hats, headwear */}
+        {accessoryItems.length > 0 && (
+          <div className="flex justify-center gap-4 mb-6">
+            {accessoryItems.map((item) => (
+              <div key={item.itemId} className="w-48">
+                <ItemCard item={item} />
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-primary">${item.price.toFixed(2)}</span>
-                <a 
-                  href={item.productLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:shadow-glow transition-all duration-300"
-                >
-                  Shop
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+            ))}
+          </div>
+        )}
+
+        {/* Top wear */}
+        {topItems.length > 0 && (
+          <div className="flex justify-center gap-4 mb-6">
+            {topItems.map((item) => (
+              <div key={item.itemId} className="w-64">
+                <ItemCard item={item} />
               </div>
-              
-              {!item.vendorTrusted && (
-                <p className="text-xs text-destructive flex items-start gap-1">
-                  <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                  This item is from an unverified site. Please check carefully before buying.
-                </p>
-              )}
-            </div>
-          </Card>
-        ))}
+            ))}
+          </div>
+        )}
+
+        {/* Bottom wear */}
+        {bottomItems.length > 0 && (
+          <div className="flex justify-center gap-4 mb-6">
+            {bottomItems.map((item) => (
+              <div key={item.itemId} className="w-64">
+                <ItemCard item={item} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Footwear */}
+        {footwearItems.length > 0 && (
+          <div className="flex justify-center gap-4">
+            {footwearItems.map((item) => (
+              <div key={item.itemId} className="w-48">
+                <ItemCard item={item} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
