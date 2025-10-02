@@ -1,0 +1,4 @@
+project_id = "lnimwcppscwohnedinvi"
+
+[functions.generate-costume]
+verify_jwt = false
